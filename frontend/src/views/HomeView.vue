@@ -7,10 +7,15 @@
         <div class="desk__filters">
           <div class="desk__user-filter">
             <ul class="user-filter">
-              <li class="user-filter__item">
+              <li
+                  v-for="user in users"
+                  :key="user.id"
+                  :title="user.name"
+                  class="user-filter__item"
+              >
                 <a class="user-filter__button">
                   <img
-                      src=""
+                      :src="getImage(user.avatar)"
                       alt="Аватар юзера"
                       width="24"
                       height="24"
@@ -21,9 +26,16 @@
           </div>
           <div class="desk__meta-filter">
             <ul class="meta-filter">
-              <li class
-                      ="meta-filter__item">
-                <a class="meta-filter__status"/>
+              <li
+                  v-for="({ value, label }) in STATUSES"
+                  :key="value"
+                  class="meta-filter__item"
+              >
+                <a
+                    class="meta-filter__status"
+                    :class="`meta-filter__status meta-filter__status--color meta-filter__status--${value}`"
+                    :title="label"
+                />
               </li>
             </ul>
           </div>
@@ -31,9 +43,9 @@
       </div>
 
       <!--      Колонки и задачи-->
-      <div class="desk__columns">
-        <div class="column">
-          <h2 class="column__name">Название колонки</h2>
+      <div v-if="columns.length" class="desk__columns">
+        <div v-for="column in columns" :key="column.id" class="column">
+          <h2 class="column__name">{{ column.title }}</h2>
           <div class="column__target-area">
             <div class="column__task">
               <div class="task">
@@ -71,9 +83,42 @@
       </div>
 
       <!--      Пустая доска-->
-      <p class="desk__emptiness">
+      <p
+          v-else
+          class="desk__emptiness"
+      >
         Пока нет ни одной колонки
       </p>
     </section>
   </main>
 </template>
+
+<script setup>
+import columns from '../mocks/columns.json'
+import users from '../mocks/users.json'
+import {STATUSES} from '../common/constants'
+import rawTasks from '../mocks/tasks.json'
+import {normalizeTask, getTagsArrayFromString} from '../common/helpers'
+
+// нормализуем
+const normalizedTasks = rawTasks.map(task => normalizeTask(task))
+
+// сортируем
+const columnTasks = normalizedTasks
+    // Фильтруем задачи, которые прикреплены к колонке
+    .filter(({ columnId }) => columnId)
+    .reduce((accumulator, task) => {
+      task.tags = getTagsArrayFromString(task.tags)
+      if (accumulator[task.columnId]) {
+        accumulator[task.columnId] = [...accumulator[task.columnId], task]
+      } else {
+        accumulator[task.columnId] = [task]
+      }
+      return accumulator
+    }, {})
+
+const getImage = image => {
+  // https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url
+  return new URL(`../assets/img/${image}`, import.meta.url).href
+}
+</script>
