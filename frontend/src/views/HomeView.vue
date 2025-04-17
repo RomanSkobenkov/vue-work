@@ -57,7 +57,6 @@ function deleteColumn(id) {
                 :key="user.id"
                 :title="user.name"
                 class="user-filter__item"
-                :class="{ active: filters.users.some((id) => id === user.id) }"
                 @click="
                   $emit('applyFilters', { item: user.id, entity: 'users' })
                 "
@@ -80,7 +79,6 @@ function deleteColumn(id) {
                 v-for="{ value, label } in STATUSES"
                 :key="value"
                 class="meta-filter__item"
-                :class="{ active: filters.statuses.some((s) => s === value) }"
                 @click="
                   $emit('applyFilters', { item: value, entity: 'statuses' })
                 "
